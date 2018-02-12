@@ -1,0 +1,35 @@
+{
+  "name": "merchant-tracking-bot",
+  "version": "1.0.0",
+  "description": "My own Discord bot",
+  "main": "bot.js",
+  "author": "Cake",
+  "engines": {
+    "node": "9.4.0",
+    "npm": "5.6.0"
+  },
+  "dependencies": {
+    "discord.io": "github:woor/discord.io#gateway_v6",
+    "forever-monitor": "^1.7.1",
+    "mysql": "^2.15.0",
+    "winston": "^2.4.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node bot.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Cale721/Merchant-Tracking-Bot.git"
+  },
+  "keywords": [
+    "heroku",
+    "discord.js"
+  ],
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Cale721/Merchant-Tracking-Bot/issues"
+  },
+  "homepage": "https://github.com/Cale721/Merchant-Tracking-Bot#readme"
+}
