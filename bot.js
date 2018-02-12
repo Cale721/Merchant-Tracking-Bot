@@ -108,7 +108,7 @@ var sell_argcheck = function (args, channelID) {
         send_message(channelID, message_body);
     }
     else {
-        qty = args[1];
+        qty = Number(args[1]);
         invItem = args[2];
         currency = args[3];
         console.log(`Received request to sell ${qty} ${invItem}(s) for ${currency}`);
@@ -274,10 +274,10 @@ var list_argcheck = function (args, channelID) {
         send_message(channelID, message_body);
     }
     else {
-        qty = args[1];
+        qty = Number(args[1]);
         invItem = args[2];
         currency = args[3];
-        price = args[4];
+        price = Number(args[4]);
         console.log(`Received request to list ${qty} ${invItem}(s) for ${currency}`);
         console.log(`Attempting to retrieve a connection from the pool`);
         list_open_conn(qty, invItem, currency, channelID);
@@ -321,8 +321,8 @@ var list_write = function (qty, invItem, currency, price, channelID, connection,
     //newQty = currQty - qty;
     //console.log(`New ${invItem}:${currency} after sale: ${newQty}`);
     var write = `INSERT inventory SET name = '${invItem}',  quantity = '${qty}', price = '${price}', currency = '${currency}' `;
-    connection.query(write, function (err, write_result) {
-        console.log(write_result.affectedRows + " record(s) inserted");
+    connection.query(write, function (err, result) {
+        console.log(result.affectedRows + " record(s) inserted");
         console.log(`List complete!`);
         connection.release();
         message_body = `New Item added: ${qty} ${invItem}s, sold for: ${price} ${currency} now in stock.`
@@ -331,14 +331,14 @@ var list_write = function (qty, invItem, currency, price, channelID, connection,
 };
 
 var list_write_update = function (qty, invItem, currency, price, channelID, connection, currQty) {
-    newQtyList = currQty + qty;
+    var newQtyList = currQty + qty;
     console.log(`New ${invItem}:${currency} after sale: ${newQtyList}`);
-    var write = `UPDATE inventory SET quantity = '${newQtyList}' WHERE name = '${invItem}' AND currency = '${currency}'  `;
-    connection.query(write, function (err, write_result) {
-        console.log(write_result.affectedRows + " record(s) updated");
+    var write = `UPDATE inventory SET quantity = '${newQtyList}' WHERE name = '${invItem}' AND currency = '${currency}'`;
+    connection.query(write, function (err, result) {
+        console.log(result.affectedRows + " record(s) updated");
         console.log(`Record update complete!`);
         connection.release();
-        message_body = `Item updated: ${newqtyList} ${invItem}s, now in stock.`
+        message_body = `Item updated: ${newQtyList} ${invItem}s, now in stock.`
         send_message(channelID, message_body);
     });
 };
@@ -375,7 +375,3 @@ var list_validate_names = function (qty, invItem, currency, price, channelID, co
         ;
     });
 }
-
-
-
-
