@@ -2,6 +2,7 @@ var Discord = require('discord.io');
 var logger = require('winston');
 //var auth = require('./auth.json');
 //var Table = require('cli-table2');
+var cTable = require('console.table');
 var mysql = require('mysql');
 //var HashTable = require('hashtable');
 
