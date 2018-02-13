@@ -2,7 +2,6 @@ var Discord = require('discord.io');
 var logger = require('winston');
 //var auth = require('./auth.json');
 var mysql = require('mysql');
-var Table = require('cli-table')
 //var HashTable = require('hashtable');
 
 var pool = mysql.createPool({
@@ -178,17 +177,9 @@ var inv_check = function (channelID) {
         connection.query(sql, function (err, result) {
             if (err) throw err;
             connection.release();
-
-            var table = new Table({
-            	head: ['Quantity', 'Name', 'Currency', 'Price', 'Sold'],
-            	colWidths :[100, 100, 100, 100, 100]
-            });
-            
             for (var index in result) {
-            	table.push(
-                message_body = `${result[index].Quantity} - ${result[index].Name} - ${result[index].Currency} - ${result[index].Price} - ${result[index].Sold}`;
+                message_body = `${result[index].Quantity} - ${result[index].Name} - ${result[index].Currency} - ${result[index].Price}`;
                 send_message(channelID, message_body);
-                );
             }
         });
     });
