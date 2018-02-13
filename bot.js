@@ -2,6 +2,7 @@ var Discord = require('discord.io');
 var logger = require('winston');
 //var auth = require('./auth.json');
 var mysql = require('mysql');
+var Table = require('cli-table')
 //var HashTable = require('hashtable');
 
 var pool = mysql.createPool({
@@ -48,7 +49,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 test(channelID);
                 break;
 
-            case 'sell':
+            case 'sold':
                 sell_argcheck(args, channelID);
                 break;
 
@@ -67,6 +68,10 @@ bot.on('message', function (user, userID, channelID, message, evt) {
             case 'list':
               list_argcheck(args, channelID);
               break;
+
+            case 'help':
+            	help(channelID);
+            	break;
 
         }
     }
@@ -98,9 +103,14 @@ var wunderbar = function (channelID) {
     send_message(channelID, message_body);
 };
 
+var help = function (channelID) {
+    message_body1 = "The following commands are available: \n!sold <quantity> <name> <currency> ---Track item sales \n!list <quantity> <name> <currency> <price> ---List new items to inventory \n!inv ---Check current inventory"  
+    send_message(channelID, message_body1);
+};
+
 var sell_argcheck = function (args, channelID) {
     if (args.length < 4) {
-        message_body = "Format for this command is: !Sold <quantity> <name> <currency>";
+        message_body = "Format for this command is: !sold <quantity> <name> <currency>";
         send_message(channelID, message_body);
     }
     else {
@@ -116,7 +126,7 @@ var sell_argcheck = function (args, channelID) {
 
 var sell_read = function (qty, invItem, currency, channelID, connection) {
     console.log(`Checking to see how many ${invItem}:${currency} are available`);
-    var read = `SELECT idInventory,quantity FROM inventory WHERE name = '${invItem}' AND currency = '${currency}'`;
+    var read = `SELECT idInventory,quantity, sold FROM inventory WHERE name = '${invItem}' AND currency = '${currency}'`;
     connection.query(read, function (err, read_result) {
         if (read_result.length > 0) {
             currQty = read_result[0].quantity;
@@ -145,9 +155,13 @@ var sell_read = function (qty, invItem, currency, channelID, connection) {
 }
 
 var sell_write = function (qty, invItem, currency, channelID, connection, currQty) {
+	var read = `SELECT idInventory,quantity, sold FROM inventory WHERE name = '${invItem}' AND currency = '${currency}'`;
+    connection.query(read, function (err, read_result) {
     newQty = currQty - qty;
+    soldQty = read_result[0].sold;
+    newSoldQty = soldQty + qty;
     console.log(`New ${invItem}:${currency} after sale: ${newQty}`);
-    var write = `UPDATE inventory SET quantity = ${newQty} WHERE name = '${invItem}' AND currency = '${currency}'`;
+    var write = `UPDATE inventory SET quantity = '${newQty}', sold = '${newSoldQty}' WHERE name = '${invItem}' AND currency = '${currency}'`;
     connection.query(write, function (err, write_result) {
         console.log(write_result.affectedRows + " record(s) updated");
         console.log(`Sale complete!`);
@@ -155,6 +169,7 @@ var sell_write = function (qty, invItem, currency, channelID, connection, currQt
         message_body = `Sold ${qty} ${invItem}s, ${newQty} now in stock.`
         send_message(channelID, message_body);
     });
+});
 };
 
 var inv_check = function (channelID) {
@@ -163,9 +178,17 @@ var inv_check = function (channelID) {
         connection.query(sql, function (err, result) {
             if (err) throw err;
             connection.release();
+
+            var table = new Table({
+            	head: ['Quantity', 'Name', 'Currency', 'Price', 'Sold'],
+            	colWidths :[100, 100, 100, 100, 100]
+            });
+            
             for (var index in result) {
-                message_body = `${result[index].Quantity} - ${result[index].Name} - ${result[index].Currency} - ${result[index].Price}`;
+            	table.push(
+                message_body = `${result[index].Quantity} - ${result[index].Name} - ${result[index].Currency} - ${result[index].Price} - ${result[index].Sold}`;
                 send_message(channelID, message_body);
+                );
             }
         });
     });
@@ -332,7 +355,7 @@ var list_write_update = function (qty, invItem, currency, price, channelID, conn
     console.log(`New ${invItem}:${currency} after sale: ${newQtyList}`);
     var write = `UPDATE inventory SET quantity = '${newQtyList}' WHERE name = '${invItem}' AND currency = '${currency}'`;
     connection.query(write, function (err, result) {
-        console.log(result.affectedRows + " record(s) updated");
+        //console.log(result.affectedRows + " record(s) updated");
         console.log(`Record update complete!`);
         connection.release();
         message_body = `Item updated: ${newQtyList} ${invItem}(s), now in stock.`
@@ -349,7 +372,7 @@ var list_open_conn = function (qty, invItem, currency, channelID) {
 
 var list_validate_names = function (qty, invItem, currency, price, channelID, connection) {
     item_arr = new Array();
-    new_arr = new Array(item_arr);
+    //new_arr = new Array(item_arr);
     var sql = `SELECT DISTINCT LOWER(name) AS name, currency FROM inventory WHERE name = '${invItem}' AND currency = '${currency}'`;
     console.log(`Current unique item/currency combo in inventory:`);
     console.log();
