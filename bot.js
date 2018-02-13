@@ -68,9 +68,9 @@ bot.on('message', function (user, userID, channelID, message, evt) {
               list_argcheck(args, channelID);
               break;
 
-            case 'help':
-            	help(channelID);
-            	break;
+            //case 'help':
+            	//help(channelID);
+            	//break;
 
         }
     }
@@ -102,10 +102,10 @@ var wunderbar = function (channelID) {
     send_message(channelID, message_body);
 };
 
-var help = function (channelID) {
-    message_body1 = "The following commands are available: \n!sold <quantity> <name> <currency> ---Track item sales \n!list <quantity> <name> <currency> <price> ---List new items to inventory \n!inv ---Check current inventory"  
-    send_message(channelID, message_body1);
-};
+//var help = function (channelID) {
+  //  message_body = "The following commands are available: \n!sold <quantity> <name> <currency> ---Track item sales \n!list <quantity> <name> <currency> <price> ---List new items to inventory \n!inv ---Check current inventory";  
+  //  send_message(channelID, message_body);
+//};
 
 var sell_argcheck = function (args, channelID) {
     if (args.length < 4) {
@@ -178,7 +178,7 @@ var inv_check = function (channelID) {
             if (err) throw err;
             connection.release();
             for (var index in result) {
-                message_body = `${result[index].Quantity} - ${result[index].Name} - ${result[index].Currency} - ${result[index].Price}`;
+                message_body = `${result[index].Quantity} - ${result[index].Name} - ${result[index].Currency} - ${result[index].Price} - ${result[index].Sold}`;
                 send_message(channelID, message_body);
             }
         });

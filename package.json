@@ -9,7 +9,6 @@
     "npm": "5.6.0"
   },
   "dependencies": {
-    "cli-table": "^0.3.1",
     "discord.io": "github:woor/discord.io#gateway_v6",
     "forever-monitor": "^1.7.1",
     "mysql": "^2.15.0",
