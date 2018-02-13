@@ -1,6 +1,7 @@
 var Discord = require('discord.io');
 var logger = require('winston');
 //var auth = require('./auth.json');
+//var Table = require('cli-table2');
 var mysql = require('mysql');
 //var HashTable = require('hashtable');
 
@@ -68,9 +69,9 @@ bot.on('message', function (user, userID, channelID, message, evt) {
               list_argcheck(args, channelID);
               break;
 
-            //case 'help':
-            	//help(channelID);
-            	//break;
+            case 'help':
+            	help(channelID);
+            	break;
 
         }
     }
@@ -102,10 +103,10 @@ var wunderbar = function (channelID) {
     send_message(channelID, message_body);
 };
 
-//var help = function (channelID) {
-  //  message_body = "The following commands are available: \n!sold <quantity> <name> <currency> ---Track item sales \n!list <quantity> <name> <currency> <price> ---List new items to inventory \n!inv ---Check current inventory";  
-  //  send_message(channelID, message_body);
-//};
+var help = function (channelID) {
+   message_body = "The following commands are available: \n!sold <quantity> <name> <currency> ---Track item sales \n!list <quantity> <name> <currency> <price> ---List new items to inventory \n!inv ---Check current inventory";  
+   send_message(channelID, message_body);
+};
 
 var sell_argcheck = function (args, channelID) {
     if (args.length < 4) {
