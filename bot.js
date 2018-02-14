@@ -74,6 +74,22 @@ bot.on('message', function (user, userID, channelID, message, evt) {
             	help(channelID);
             	break;
 
+            case 'dump':
+                dump(channelID);
+                break;
+
+            case 'fart':
+                fart(channelID);
+                break;
+
+            case 'poop':
+                poop(channelID);
+                break;
+
+            case 'makinplays':
+                makinplays(channelID);
+                break;
+
         }
     }
 });
@@ -106,6 +122,26 @@ var wunderbar = function (channelID) {
 
 var help = function (channelID) {
    message_body = "The following commands are available: \n!sold <quantity> <name> <currency> ---Track item sales \n!list <quantity> <name> <currency> <price> ---List new items to inventory \n!inv ---Check current inventory";  
+   send_message(channelID, message_body);
+};
+
+var dump = function (channelID) {
+   message_body = "Uhhh ohhhh... I just shit my pants.";  
+   send_message(channelID, message_body);
+};
+
+var fart = function (channelID) {
+   message_body = "Whoa.  That one was smelly.  And wet...";  
+   send_message(channelID, message_body);
+};
+
+var poop = function (channelID) {
+   message_body = "What the hell!  No toilet paper! FML";  
+   send_message(channelID, message_body);
+};
+
+var makinplays = function (channelID) {
+   message_body = "MAKIN PLAYS!!!";  
    send_message(channelID, message_body);
 };
 
@@ -180,8 +216,9 @@ var inv_check = function (channelID) {
             if (err) throw err;
             connection.release();
             console.log(result.length);
-            var message_body;
+            var message_body = '';
             for (var index in result) {
+                //message_body += `${result[index].Quantity}\n`;
                 message_body += `${result[index].Quantity} - ${result[index].Name} - ${result[index].Currency} - ${result[index].Price} - ${result[index].Sold}\n`;
             }
             console.log(message_body);
