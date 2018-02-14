@@ -179,10 +179,13 @@ var inv_check = function (channelID) {
         connection.query(sql, function (err, result) {
             if (err) throw err;
             connection.release();
+            console.log(result.length);
+            var message_body;
             for (var index in result) {
-                message_body = `${result[index].Quantity} - ${result[index].Name} - ${result[index].Currency} - ${result[index].Price} - ${result[index].Sold}`;
-                send_message(channelID, message_body);
+                message_body += `${result[index].Quantity} - ${result[index].Name} - ${result[index].Currency} - ${result[index].Price} - ${result[index].Sold}\n`;
             }
+            console.log(message_body);
+            send_message(channelID, message_body);
         });
     });
 }
