@@ -1,10 +1,47 @@
 var Discord = require('discord.io');
 var logger = require('winston');
-//var auth = require('./auth.json');
-//var Table = require('cli-table2');
-//var cTable = require('console.table');
 var mysql = require('mysql');
-//var HashTable = require('hashtable');
+//var Table = require('tty-table');
+//var chalk = require('chalk');
+
+
+//Table Start
+/*
+var header = [
+	{
+		value: "header1",
+		headerColor : "red",
+		color: "white",
+		aligh: "left",
+		paddingLeft: 5,
+		width : 30
+	}
+
+];
+
+var rows = [
+	["test"],
+	["test1"]
+
+];
+
+var footer = [
+  "TOTAL",
+  (function(){
+    return rows.reduce(function(prev,curr){
+      return prev+curr[1]
+    },0)
+  }()),
+  (function(){
+    var total = rows.reduce(function(prev,curr){
+      return prev+((curr[2]==='yes') ? 1 : 0);
+    },0);
+    return (total/rows.length*100).toFixed(2) + "%";
+  }())];
+*/
+
+  
+
 
 var pool = mysql.createPool({
     connectionLimit: 20,
@@ -44,10 +81,6 @@ bot.on('message', function (user, userID, channelID, message, evt) {
         switch (cmd) {
             case 'ping':
                 ping(channelID);
-                break;
-
-            case 'test':
-                test(channelID);
                 break;
 
             case 'sold':
@@ -98,6 +131,10 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 kill_stats(channelID, user);
                 break;
 
+            case 'table':
+                table_test(channelID);
+                break;
+
         }
     }
 });
@@ -117,16 +154,6 @@ var ping = function (channelID) {
 };
 
 
-var test = function () {
-    var sql = "UPDATE inventory SET quantity = '10' WHERE quantity < '1'";
-    pool.getConnection(function (err, connection) {
-        connection.query(sql, function (err, result) {
-            if (err) throw err;
-            console.log(result.affectedRows + " record(s) updated");
-            connection.release();
-        });
-    });
-};
 
 //Dumb stuff Commands
 var wunderbar = function (channelID) {
@@ -154,18 +181,64 @@ var makinplays = function (channelID) {
    message_body = "MAKIN PLAYS!!!";  
    send_message(channelID, message_body);
 };
-//End dumb stuff
+
+/*
+//Table Test
+var table_test = function(chanelID){
+var t1 = Table(header,rows,footer,{
+  borderStyle : 1,
+  borderColor : "blue",
+  paddingBottom : 0,
+  headerAlign : "center",
+  align : "center",
+  color : "white",
+  truncate: "..."
+});
+
+str1 = t1.render();
+console.log(str1);
+
+}
+
+*/
+
+//Inventory Check
+var inv_check = function (channelID) {
+    var sql = "select * from inventory;"
+    pool.getConnection(function (err, connection) {
+        connection.query(sql, function (err, result) {
+            if (err) throw err;
+            connection.release();
+            console.log(result.length);
+            var message_body = '';
+            for (var index in result) {
+                message_body += `${result[index].Quantity} - ${result[index].Name} - ${result[index].Currency} - ${result[index].Price} - ${result[index].Sold}\n`;
+            }
+            console.log(message_body);
+            send_message(channelID, message_body);
+        });
+    });
+}
 
 
-
-
+//Send Message Function
+var send_message = function (channelID, message_body) {
+    bot.sendMessage({
+        to: channelID,
+        message: message_body
+    });
+}
 
 
 
 //Start !sell
 var sell_argcheck = function (args, channelID) {
     if (args.length < 4) {
-        message_body = "Format for this command is: !sold <quantity> <name> <currency>";
+        message_body = "Format for this command is: !sold <quantity> <name> <currency>.";
+        send_message(channelID, message_body);
+    }
+    if (isNaN(args[1])) {
+        message_body = "Format for this command is: !sold <quantity> <name> <currency>.  You must input a number for <quantity>.";
         send_message(channelID, message_body);
     }
     else {
@@ -227,29 +300,7 @@ var sell_write = function (qty, invItem, currency, channelID, connection, currQt
 });
 };
 
-var inv_check = function (channelID) {
-    var sql = "select * from inventory;"
-    pool.getConnection(function (err, connection) {
-        connection.query(sql, function (err, result) {
-            if (err) throw err;
-            connection.release();
-            console.log(result.length);
-            var message_body = '';
-            for (var index in result) {
-                message_body += `${result[index].Quantity} - ${result[index].Name} - ${result[index].Currency} - ${result[index].Price} - ${result[index].Sold}\n`;
-            }
-            console.log(message_body);
-            send_message(channelID, message_body);
-        });
-    });
-}
 
-var send_message = function (channelID, message_body) {
-    bot.sendMessage({
-        to: channelID,
-        message: message_body
-    });
-}
 
 var sell_validate_names = function (qty, invItem, currency, channelID, connection) {
     item_arr = new Array();
@@ -342,7 +393,15 @@ var sell_multi_orders = function () {
 //Start !list
 var list_argcheck = function (args, channelID) {
     if (args.length < 5) {
-        message_body = "Format for this command is: !list <quantity> <name> <currency> <price>";
+        message_body = "Format for this command is: !list <quantity> <name> <currency> <price>.";
+        send_message(channelID, message_body);
+    }
+    if (isNaN(args[1])) {
+        message_body = "Format for this command is: !list <quantity> <name> <currency> <price>.  Your input must be a number for <quantity>.";
+        send_message(channelID, message_body);
+    }
+    if (isNaN(args[4])) {
+        message_body = "Format for this command is: !list <quantity> <name> <currency> <price>.  Your input must be a number for <price>.";
         send_message(channelID, message_body);
     }
     else {
@@ -447,7 +506,7 @@ var list_validate_names = function (qty, invItem, currency, price, channelID, co
 //Start !kill
 var kill_argcheck = function (args, channelID, user) {
     if (args.length < 2) {
-        message_body = "Format for this command is: !kill <name>";
+        message_body = "Format for this command is: !kill <name>.";
         send_message(channelID, message_body);
     }
     else {
