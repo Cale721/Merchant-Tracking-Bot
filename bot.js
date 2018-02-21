@@ -199,6 +199,8 @@ var t1 = Table(header,rows,footer,{
 
 str1 = t1.render();
 console.log(str1);
+message_body = str1;
+send_message(channelID, message_body);
 
 }
 
