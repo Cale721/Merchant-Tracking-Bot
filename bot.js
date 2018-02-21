@@ -1,12 +1,11 @@
 var Discord = require('discord.io');
 var logger = require('winston');
 var mysql = require('mysql');
-//var Table = require('tty-table');
-//var chalk = require('chalk');
+var Table = require('tty-table')('automattic-cli-table');
+var chalk = require('chalk');
 
 
 //Table Start
-/*
 var header = [
 	{
 		value: "header1",
@@ -38,7 +37,7 @@ var footer = [
     },0);
     return (total/rows.length*100).toFixed(2) + "%";
   }())];
-*/
+
 
   
 
@@ -59,11 +58,14 @@ logger.add(logger.transports.Console, {
 });
 logger.level = 'debug';
 
+
 // Initialize Discord Bot
 var bot = new Discord.Client({
     token: process.env.authtoken,
     autorun: true
 });
+
+
 
 bot.on('ready', function (evt) {
     logger.info('Connected');
@@ -182,9 +184,9 @@ var makinplays = function (channelID) {
    send_message(channelID, message_body);
 };
 
-/*
+
 //Table Test
-var table_test = function(chanelID){
+var table_test = function(channelID){
 var t1 = Table(header,rows,footer,{
   borderStyle : 1,
   borderColor : "blue",
@@ -200,7 +202,7 @@ console.log(str1);
 
 }
 
-*/
+
 
 //Inventory Check
 var inv_check = function (channelID) {
