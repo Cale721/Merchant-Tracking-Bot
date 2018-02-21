@@ -1,7 +1,7 @@
 var Discord = require('discord.io');
 var logger = require('winston');
 var mysql = require('mysql');
-var Table = require('tty-table')('automattic-cli-table');
+var Table = require('tty-table');
 var chalk = require('chalk');
 
 
