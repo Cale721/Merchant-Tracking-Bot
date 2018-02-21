@@ -90,9 +90,23 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 makinplays(channelID);
                 break;
 
+            case 'kill':
+                kill_argcheck(args, channelID, user);
+                break;
+
+            case 'killstats':
+                kill_stats(channelID, user);
+                break;
+
         }
     }
 });
+
+
+var help = function (channelID) {
+   message_body = "The following commands are available: \n!sold <quantity> <name> <currency> ---Track item sales \n!list <quantity> <name> <currency> <price> ---List new items to inventory \n!inv ---Check current inventory";  
+   send_message(channelID, message_body);
+};
 
 var ping = function (channelID) {
     bot.sendMessage({
@@ -114,16 +128,12 @@ var test = function () {
     });
 };
 
-
+//Dumb stuff Commands
 var wunderbar = function (channelID) {
     message_body = "Wunderbar!";
     send_message(channelID, message_body);
 };
 
-var help = function (channelID) {
-   message_body = "The following commands are available: \n!sold <quantity> <name> <currency> ---Track item sales \n!list <quantity> <name> <currency> <price> ---List new items to inventory \n!inv ---Check current inventory";  
-   send_message(channelID, message_body);
-};
 
 var dump = function (channelID) {
    message_body = "Uhhh ohhhh... I just shit my pants.";  
@@ -144,7 +154,15 @@ var makinplays = function (channelID) {
    message_body = "MAKIN PLAYS!!!";  
    send_message(channelID, message_body);
 };
+//End dumb stuff
 
+
+
+
+
+
+
+//Start !sell
 var sell_argcheck = function (args, channelID) {
     if (args.length < 4) {
         message_body = "Format for this command is: !sold <quantity> <name> <currency>";
@@ -218,7 +236,6 @@ var inv_check = function (channelID) {
             console.log(result.length);
             var message_body = '';
             for (var index in result) {
-                //message_body += `${result[index].Quantity}\n`;
                 message_body += `${result[index].Quantity} - ${result[index].Name} - ${result[index].Currency} - ${result[index].Price} - ${result[index].Sold}\n`;
             }
             console.log(message_body);
@@ -318,8 +335,11 @@ var sell_multi_orders = function () {
         });
     });
 }
+//End !sell
 
 
+
+//Start !list
 var list_argcheck = function (args, channelID) {
     if (args.length < 5) {
         message_body = "Format for this command is: !list <quantity> <name> <currency> <price>";
@@ -332,7 +352,7 @@ var list_argcheck = function (args, channelID) {
         price = Number(args[4]);
         console.log(`Received request to list ${qty} ${invItem}(s) for ${currency}`);
         console.log(`Attempting to retrieve a connection from the pool`);
-        list_open_conn(qty, invItem, currency, channelID);
+        list_open_conn(qty, invItem, currency, price, channelID);
     }
     ;
 }
@@ -371,8 +391,6 @@ var list_read = function (qty, invItem, currency, price, channelID, connection) 
 
 
 var list_write = function (qty, invItem, currency, price, channelID, connection, currQty) {
-    //newQty = currQty - qty;
-    //console.log(`New ${invItem}:${currency} after sale: ${newQty}`);
     var write = `INSERT inventory SET name = '${invItem}',  quantity = '${qty}', price = '${price}', currency = '${currency}' `;
     connection.query(write, function (err, result) {
         console.log(result.affectedRows + " record(s) inserted");
@@ -396,7 +414,7 @@ var list_write_update = function (qty, invItem, currency, price, channelID, conn
     });
 };
 
-var list_open_conn = function (qty, invItem, currency, channelID) {
+var list_open_conn = function (qty, invItem, currency, price, channelID) {
     pool.getConnection(function (err, connection) {
         console.log(`Conection opened. Checking to see if ${invItem} exists in inventory.`);
         list_validate_names(qty, invItem, currency, price, channelID, connection);
@@ -423,3 +441,60 @@ var list_validate_names = function (qty, invItem, currency, price, channelID, co
         ;
     });
 }
+//End !list
+
+
+//Start !kill
+var kill_argcheck = function (args, channelID, user) {
+    if (args.length < 2) {
+        message_body = "Format for this command is: !kill <name>";
+        send_message(channelID, message_body);
+    }
+    else {
+        playerKilled = args[1];
+        kill_open_conn(playerKilled, channelID, user);
+    }
+    ;
+}
+
+var kill_open_conn = function (playerkilled, channelID, user) {
+    pool.getConnection(function (err, connection) {
+        console.log(`Conection opened.`);
+        kill_add(playerkilled, channelID, user, connection);
+    });
+}
+
+var kill_add = function (playerKilled, channelID, user, connection) {
+    var write = `INSERT killcount SET Player = '${user}',  PlayerKilled = '${playerKilled}' `;
+
+    connection.query(write, function (err, result) {
+        //console.log(result);
+        connection.release();
+        //message_body = `New kill recorded:  ${user} cucked ${playerKilled}.`
+        //send_message(channelID, message_body);
+    });
+
+};
+
+var kill_stats = function(channelID, user){
+    pool.getConnection(function (err, connection) {
+    var sql = `SELECT Player, PlayerKilled FROM killcount WHERE Player = '${user}' `;
+    connection.query(sql, function(err, result){
+        //console.log(result);
+        connection.release();
+        var message_body = '';
+            for (var index in result) {
+                message_body += `${result[index].Player} - ${result[index].PlayerKilled}\n`;
+            }
+            if (result.length <= 0){
+                message_body = 'No Rows found.';
+                send_message(channelID, message_body);
+            }
+            else{
+        send_message(channelID, message_body);
+            }
+        });
+    });
+    };
+//End !kill
+
