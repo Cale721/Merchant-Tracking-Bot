@@ -76,13 +76,16 @@ bot.on('ready', function (evt) {
     logger.info(bot.username + ' - (' + bot.id + ')');
 });
 
+let tempvar = false;
 bot.on('message', function (user, userID, channelID, message, evt) {
 
     // Our bot needs to know if it will execute a command
     // It will listen for messages that will start with `!`
+    //console.log(tempvar +'1');
     if (message.substring(0, 1) == '!') {
         var args = message.substring(1).split(' ');
         var cmd = args[0];
+        if(tempvar == false){
         switch (cmd) {
             case 'ping':
                 ping(channelID);
@@ -106,6 +109,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 
             case 'list':
               list_argcheck(args, channelID);
+              //console.log(tempvar + ' argcheck tempvar');
               break;
 
             case 'help':
@@ -139,9 +143,27 @@ bot.on('message', function (user, userID, channelID, message, evt) {
             case 'table':
                 table_test(channelID);
                 break;
+            }
+        }
+            else{
+            	switch (cmd){
+            		case 'Y':
+            		pool.getConnection(function (err, connection) {
+            		list_write_update(qty, invItem, currency, price, channelID, connection, currQty);
+            		});
+            		tempvar = false;
+            		break;
+
+            		case 'N':
+            		message_body = `List update for ${invItem} cancelled.`
+                	send_message(channelID, message_body);
+            		tempvar = false;
+            		break;
+            	}
+            }
 
         }
-    }
+    //}
 });
 
 
@@ -424,23 +446,22 @@ var list_argcheck = function (args, channelID) {
 }
 
 var list_read = function (qty, invItem, currency, price, channelID, connection) {
-	var tempvar = false;
 
     console.log(`Checking to see how many ${invItem}:${currency} are available`);
-    console.log(tempvar + '1');
     var read = `SELECT idInventory, quantity FROM inventory WHERE name = '${invItem}' AND currency = '${currency}'`;
     connection.query(read, function (err, read_result) {
         if (read_result.length >= 0) {
             currQty = read_result[0].quantity;
-
-            message_body = `Item row exists. Currently ${currQty} available for sale. Do you want to update inventory?  ~Y / ~N.`
-            send_message(channelID, message_body);
             tempvar = true;
-            console.log(tempvar + '2');
+            //console.log(tempvar + ' list read check');
+
+            message_body = `Item row exists. Currently ${currQty} available for sale. Do you want to update inventory?  !Y / !N.`
+            send_message(channelID, message_body);
             //console.log(`Currently ${currQty} available for sale. Updating Inventory.`);
             
+            /*
             bot.on('message', function (user, userID, channelID, message, evt) {
-            if (tempvar = true && message.substring(0, 1) == '~') {
+            if (message.substring(0, 1) == '~') {
             var args = message.substring(1).split(' ');
             var confirm = args[0];
             switch (confirm) {
@@ -459,6 +480,7 @@ var list_read = function (qty, invItem, currency, price, channelID, connection) 
                     }
                  }
             });
+            */
             //tempvar = false;
             //console.log(tempvar + '3');
         }
