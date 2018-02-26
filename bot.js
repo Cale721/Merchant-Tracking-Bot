@@ -8,19 +8,22 @@ var chalk = require('chalk');
 //Table Start
 var header = [
 	{
-		value: "header1",
-		headerColor : "red",
-		color: "white",
-		aligh: "left",
-		paddingLeft: 5,
-		width : 30
-	}
+		value: "header1"
+		//headerColor : "red",
+		//color: "white",
+		//aligh: "left",
+		//paddingLeft: 5,
+		//width : 30
+	},
+    {
+        value: "header2"
+    }
 
 ];
 
 var rows = [
-	["test"],
-	["test1"]
+	["test1", 2.50],
+	["test1", 5.0]
 
 ];
 
@@ -188,12 +191,12 @@ var makinplays = function (channelID) {
 //Table Test
 var table_test = function(channelID){
 var t1 = Table(header,rows,footer,{
-  borderStyle : 1,
-  borderColor : "blue",
+  borderStyle : 2,
+  //borderColor : "blue",
   paddingBottom : 0,
   headerAlign : "center",
   align : "center",
-  color : "white",
+  //color : "white",
   truncate: "..."
 });
 
@@ -421,7 +424,10 @@ var list_argcheck = function (args, channelID) {
 }
 
 var list_read = function (qty, invItem, currency, price, channelID, connection) {
+	var tempvar = false;
+
     console.log(`Checking to see how many ${invItem}:${currency} are available`);
+    console.log(tempvar + '1');
     var read = `SELECT idInventory, quantity FROM inventory WHERE name = '${invItem}' AND currency = '${currency}'`;
     connection.query(read, function (err, read_result) {
         if (read_result.length >= 0) {
@@ -429,24 +435,32 @@ var list_read = function (qty, invItem, currency, price, channelID, connection) 
 
             message_body = `Item row exists. Currently ${currQty} available for sale. Do you want to update inventory?  ~Y / ~N.`
             send_message(channelID, message_body);
+            tempvar = true;
+            console.log(tempvar + '2');
             //console.log(`Currently ${currQty} available for sale. Updating Inventory.`);
             
             bot.on('message', function (user, userID, channelID, message, evt) {
-            if (message.substring(0, 1) == '~') {
+            if (tempvar = true && message.substring(0, 1) == '~') {
             var args = message.substring(1).split(' ');
             var confirm = args[0];
             switch (confirm) {
                 case 'Y':
                 list_write_update(qty, invItem, currency, price, channelID, connection, currQty);
+                tempvar = false;
+                console.log(tempvar + '3');
                 break;
 
                 case 'N':
                 message_body = `List update for ${invItem} cancelled.`
                 send_message(channelID, message_body);
+                tempvar = false;
+                console.log(tempvar + '3');
                 break;
                     }
                  }
             });
+            //tempvar = false;
+            //console.log(tempvar + '3');
         }
     });
 }
