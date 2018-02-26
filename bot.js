@@ -7,23 +7,39 @@ var chalk = require('chalk');
 
 //Table Start
 var header = [
+
 	{
-		value: "header1"
-		//headerColor : "red",
+		//value: "header1",
+		//headerColor: "black",
+		//color : "red"
 		//color: "white",
 		//aligh: "left",
 		//paddingLeft: 5,
 		//width : 30
 	},
     {
-        value: "header2"
+        //value: "`header2`"
+    },
+    {
+
+    },
+    {
+
+    },
+    {
+    	
     }
+    
 
 ];
 
 var rows = [
-	["test1", 2.50],
-	["test1", 5.0]
+/*
+	["test1", 2.50, 10],
+	["test2", 5.0, 20],
+	["test3", 6, 25],
+	["test4", 11, 2222]
+	*/
 
 ];
 
@@ -38,7 +54,8 @@ var footer = [
     var total = rows.reduce(function(prev,curr){
       return prev+((curr[2]==='yes') ? 1 : 0);
     },0);
-    return (total/rows.length*100).toFixed(2) + "%";
+    //return prev+((curr[2]==='yes') ? 1 : 0);
+    //return (total/rows.length*100).toFixed(2) + "%";
   }())];
 
 
@@ -95,7 +112,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 sell_argcheck(args, channelID);
                 break;
 
-            case 'Wonderful!':
+            case 'wonderful':
                 wunderbar(channelID);
                 break;
 
@@ -143,6 +160,14 @@ bot.on('message', function (user, userID, channelID, message, evt) {
             case 'table':
                 table_test(channelID);
                 break;
+
+            case 'hiddengems':
+                hiddengems(channelID);
+                break;
+
+            case 'text':
+            	text(channelID);
+            	break;
             }
         }
             else{
@@ -163,12 +188,18 @@ bot.on('message', function (user, userID, channelID, message, evt) {
             }
 
         }
-    //}
 });
 
 
 var help = function (channelID) {
-   message_body = "The following commands are available: \n!sold <quantity> <name> <currency> ---Track item sales \n!list <quantity> <name> <currency> <price> ---List new items to inventory \n!inv ---Check current inventory";  
+   str1 = "The following commands are available: \n!sold <quantity> <name> <currency> ---Track item sales \n!list <quantity> <name> <currency> <price> ---List new items to inventory \n!inv ---Check current inventory";
+   message_body = `\`\`\`${str1}\`\`\``;
+   send_message(channelID, message_body);
+};
+
+var hiddengems = function (channelID) {
+   str1 = "Dumb Stuff: \n !dump \n !poop \n !fart \n !makinplays \n !wonderful \n !kill (in-dev) \n !killstats (in-dev) \n !ping";
+   message_body = `\`\`\`${str1}\`\`\``;
    send_message(channelID, message_body);
 };
 
@@ -180,6 +211,13 @@ var ping = function (channelID) {
     console.log('pong');
 };
 
+
+var text = function (channelID) {
+	str1 = "text";
+    message_body = str1;
+    console.log(message_body);
+    send_message(channelID, message_body);
+};
 
 
 //Dumb stuff Commands
@@ -216,7 +254,8 @@ var t1 = Table(header,rows,footer,{
   borderStyle : 2,
   //borderColor : "blue",
   paddingBottom : 0,
-  headerAlign : "center",
+  //headerAlign : "center",
+  //headerColor: "black",
   align : "center",
   //color : "white",
   truncate: "..."
@@ -224,8 +263,10 @@ var t1 = Table(header,rows,footer,{
 
 str1 = t1.render();
 console.log(str1);
-message_body = str1;
+message_body = `\`\`\`${str1}\`\`\``;
+//message_body =+ "```"
 send_message(channelID, message_body);
+console.log(message_body);
 
 }
 
@@ -239,12 +280,46 @@ var inv_check = function (channelID) {
             if (err) throw err;
             connection.release();
             console.log(result.length);
-            var message_body = '';
+            const invArr = [];
+ 				for (let index in result) {
+   				let item = result[index];
+   				let invObj = {
+     				qty: item.Quantity,
+     				name: item.Name,
+     				currency: item.Currency,
+     				price: item.Price,
+     				sold: item.Sold
+   				}
+   			invArr.push(invObj);
+ 			}
+ 			let rows = invArr;
+ 			console.log(rows);
+ 			var t1 = Table(header,rows,footer,{
+  				borderStyle : 2,
+  				//borderColor : "blue",
+  				paddingBottom : 0,
+  				//headerAlign : "center",
+  				//headerColor: "black",
+  				align : "center",
+  				//color : "white",
+  				truncate: "..."
+				});
+
+			str1 = t1.render();
+			//console.log(str1);
+			message_body = `\`\`\`${str1}\`\`\``;
+			//message_body =+ "```"
+			send_message(channelID, message_body);
+			console.log(message_body);
+            /*
+            var message_body = 'Quantity - Item - Currency - Price - Sold\n';
             for (var index in result) {
                 message_body += `${result[index].Quantity} - ${result[index].Name} - ${result[index].Currency} - ${result[index].Price} - ${result[index].Sold}\n`;
             }
-            console.log(message_body);
-            send_message(channelID, message_body);
+            */
+            //message_body +=  `\`\`\`${message_body}\`\`\``;
+            //console.log(message_body);
+            //send_message(channelID, message_body);
         });
     });
 }
