@@ -15,36 +15,41 @@ var header = [
 		//color: "white",
 		//aligh: "left",
 		//paddingLeft: 5,
-		//width : 30
+		width: 10
 	},
     {
-        //value: "`header2`"
+        width: 15
     },
     {
-
+    	width: 15
     },
     {
-
-    },
+    	width: 10
+    }
+    ,
     {
-    	
+    	width: 10
     }
     
 
 ];
 
 var rows = [
-/*
-	["test1", 2.50, 10],
-	["test2", 5.0, 20],
-	["test3", 6, 25],
-	["test4", 11, 2222]
-	*/
+	["Quantity", "Name", "Currency", "Price", "Sold"],
+	[1, "revolver", "scrap", 30, 0],
+	[2, "test", "gears", 2, 2],
+	[3, 2.50, 10, 11, 12],
+	[4, 2.50, 10, 11, 12],
+	[5, 2.50, 10, 11, 12],
+	[6, 2.50, 10, 11, 13]
+
+	
 
 ];
 
 var footer = [
-  "TOTAL",
+  "TOTAL", "1", "2", "3", "4",
+  /*
   (function(){
     return rows.reduce(function(prev,curr){
       return prev+curr[1]
@@ -55,8 +60,10 @@ var footer = [
       return prev+((curr[2]==='yes') ? 1 : 0);
     },0);
     //return prev+((curr[2]==='yes') ? 1 : 0);
-    //return (total/rows.length*100).toFixed(2) + "%";
-  }())];
+    return (total/rows.length*100).toFixed(2) + "%";
+  }())
+*/
+  ];
 
 
   
@@ -262,9 +269,8 @@ var t1 = Table(header,rows,footer,{
 });
 
 str1 = t1.render();
-console.log(str1);
+//console.log(str1);
 message_body = `\`\`\`${str1}\`\`\``;
-//message_body =+ "```"
 send_message(channelID, message_body);
 console.log(message_body);
 
@@ -280,6 +286,9 @@ var inv_check = function (channelID) {
             if (err) throw err;
             connection.release();
             console.log(result.length);
+
+            //testing code
+            /*
             const invArr = [];
  				for (let index in result) {
    				let item = result[index];
@@ -309,17 +318,19 @@ var inv_check = function (channelID) {
 			//console.log(str1);
 			message_body = `\`\`\`${str1}\`\`\``;
 			//message_body =+ "```"
+
+			
 			send_message(channelID, message_body);
 			console.log(message_body);
-            /*
+            */
+
             var message_body = 'Quantity - Item - Currency - Price - Sold\n';
             for (var index in result) {
                 message_body += `${result[index].Quantity} - ${result[index].Name} - ${result[index].Currency} - ${result[index].Price} - ${result[index].Sold}\n`;
             }
-            */
-            //message_body +=  `\`\`\`${message_body}\`\`\``;
+            message_body +=  `\`\`\`${message_body}\`\`\``;
             //console.log(message_body);
-            //send_message(channelID, message_body);
+            send_message(channelID, message_body);
         });
     });
 }
