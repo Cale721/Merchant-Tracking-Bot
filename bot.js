@@ -109,6 +109,10 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 hiddengems(channelID);
                 break;
 
+            case 'waynebrady':
+                waynebrady(channelID);
+                break;
+
             //case 'text':
             	//text(channelID);
             	//break;
@@ -154,8 +158,8 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 var help = function (channelID) {
    str1 = "The following commands are available: \n";
    str1 += "!inv --- Check current inventory\n";
-   str1 += "!sold <quantity> <name> <currency> --- Track item sales \n";
    str1 += "!list <quantity> <name> <currency> <price> --- List new items to inventory \n";
+   str1 += "!sold <quantity> <name> <currency> --- Track item sales \n";
    str1 += "!remove <quantity> <name> <currency> --- Remove items from inventory\n"
 
    message_body = `\`\`\`${str1}\`\`\``;
@@ -174,6 +178,14 @@ var ping = function (channelID) {
         message: 'Pong!'
     });
     console.log('pong');
+};
+
+var waynebrady = function (channelID) {
+    bot.sendMessage({
+        to: channelID,
+        message: 'Is Wayne Brady going to have to choke a bitch!?!'
+    });
+    //console.log('pong');
 };
 
 /*
