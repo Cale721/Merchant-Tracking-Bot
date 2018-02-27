@@ -1,72 +1,13 @@
 var Discord = require('discord.io');
 var logger = require('winston');
 var mysql = require('mysql');
-var Table = require('tty-table');
-var chalk = require('chalk');
+var align = require('align-text');
+var pad = require('pad-right');
+var rightAlign = require('right-align');
+var center = require('center-align');
 
 
-//Table Start
-var header = [
 
-	{
-		//value: "header1",
-		//headerColor: "black",
-		//color : "red"
-		//color: "white",
-		//aligh: "left",
-		//paddingLeft: 5,
-		width: 10
-	},
-    {
-        width: 15
-    },
-    {
-    	width: 15
-    },
-    {
-    	width: 10
-    }
-    ,
-    {
-    	width: 10
-    }
-    
-
-];
-
-var rows = [
-	["Quantity", "Name", "Currency", "Price", "Sold"],
-	[1, "revolver", "scrap", 30, 0],
-	[2, "test", "gears", 2, 2],
-	[3, 2.50, 10, 11, 12],
-	[4, 2.50, 10, 11, 12],
-	[5, 2.50, 10, 11, 12],
-	[6, 2.50, 10, 11, 13]
-
-	
-
-];
-
-var footer = [
-  "TOTAL", "1", "2", "3", "4",
-  /*
-  (function(){
-    return rows.reduce(function(prev,curr){
-      return prev+curr[1]
-    },0)
-  }()),
-  (function(){
-    var total = rows.reduce(function(prev,curr){
-      return prev+((curr[2]==='yes') ? 1 : 0);
-    },0);
-    //return prev+((curr[2]==='yes') ? 1 : 0);
-    return (total/rows.length*100).toFixed(2) + "%";
-  }())
-*/
-  ];
-
-
-  
 
 
 var pool = mysql.createPool({
@@ -105,7 +46,6 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 
     // Our bot needs to know if it will execute a command
     // It will listen for messages that will start with `!`
-    //console.log(tempvar +'1');
     if (message.substring(0, 1) == '!') {
         var args = message.substring(1).split(' ');
         var cmd = args[0];
@@ -133,7 +73,6 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 
             case 'list':
               list_argcheck(args, channelID);
-              //console.log(tempvar + ' argcheck tempvar');
               break;
 
             case 'help':
@@ -162,10 +101,6 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 
             case 'killstats':
                 kill_stats(channelID, user);
-                break;
-
-            case 'table':
-                table_test(channelID);
                 break;
 
             case 'hiddengems':
@@ -220,7 +155,7 @@ var ping = function (channelID) {
 
 
 var text = function (channelID) {
-	str1 = "text";
+	str1 = `"text"`;
     message_body = str1;
     console.log(message_body);
     send_message(channelID, message_body);
@@ -255,29 +190,6 @@ var makinplays = function (channelID) {
 };
 
 
-//Table Test
-var table_test = function(channelID){
-var t1 = Table(header,rows,footer,{
-  borderStyle : 2,
-  //borderColor : "blue",
-  paddingBottom : 0,
-  //headerAlign : "center",
-  //headerColor: "black",
-  align : "center",
-  //color : "white",
-  truncate: "..."
-});
-
-str1 = t1.render();
-//console.log(str1);
-message_body = `\`\`\`${str1}\`\`\``;
-send_message(channelID, message_body);
-console.log(message_body);
-
-}
-
-
-
 //Inventory Check
 var inv_check = function (channelID) {
     var sql = "select * from inventory;"
@@ -285,50 +197,21 @@ var inv_check = function (channelID) {
         connection.query(sql, function (err, result) {
             if (err) throw err;
             connection.release();
-            console.log(result.length);
+            //console.log(result.length);
+			//function centerAlign(len, longest, line, lines) {
+ 			//return Math.floor((longest - len) / 2);
+			//}
 
-            //testing code
-            /*
-            const invArr = [];
- 				for (let index in result) {
-   				let item = result[index];
-   				let invObj = {
-     				qty: item.Quantity,
-     				name: item.Name,
-     				currency: item.Currency,
-     				price: item.Price,
-     				sold: item.Sold
-   				}
-   			invArr.push(invObj);
- 			}
- 			let rows = invArr;
- 			console.log(rows);
- 			var t1 = Table(header,rows,footer,{
-  				borderStyle : 2,
-  				//borderColor : "blue",
-  				paddingBottom : 0,
-  				//headerAlign : "center",
-  				//headerColor: "black",
-  				align : "center",
-  				//color : "white",
-  				truncate: "..."
-				});
-
-			str1 = t1.render();
-			//console.log(str1);
-			message_body = `\`\`\`${str1}\`\`\``;
-			//message_body =+ "```"
-
-			
-			send_message(channelID, message_body);
-			console.log(message_body);
-            */
-
-            var message_body = 'Quantity - Item - Currency - Price - Sold\n';
+            var str1 = 'Quantity  Item Name      Currency   Price   Sold\n';
             for (var index in result) {
-                message_body += `${result[index].Quantity} - ${result[index].Name} - ${result[index].Currency} - ${result[index].Price} - ${result[index].Sold}\n`;
+                str1 += pad(`   ${result[index].Quantity}`, 9, ' ');
+                str1 += pad(` ${result[index].Name}`, 16, ' ');
+                str1 += pad(` ${result[index].Currency}`, 12, ' ');
+                str1 += pad(` ${result[index].Price} `, 8, ' ');
+                str1 += pad(` ${result[index].Sold}`, 2, ' ');
+                str1 += `\n`;
             }
-            message_body +=  `\`\`\`${message_body}\`\`\``;
+            message_body = `\`\`\`${str1}\`\`\``;
             //console.log(message_body);
             send_message(channelID, message_body);
         });
@@ -543,32 +426,6 @@ var list_read = function (qty, invItem, currency, price, channelID, connection) 
 
             message_body = `Item row exists. Currently ${currQty} available for sale. Do you want to update inventory?  !Y / !N.`
             send_message(channelID, message_body);
-            //console.log(`Currently ${currQty} available for sale. Updating Inventory.`);
-            
-            /*
-            bot.on('message', function (user, userID, channelID, message, evt) {
-            if (message.substring(0, 1) == '~') {
-            var args = message.substring(1).split(' ');
-            var confirm = args[0];
-            switch (confirm) {
-                case 'Y':
-                list_write_update(qty, invItem, currency, price, channelID, connection, currQty);
-                tempvar = false;
-                console.log(tempvar + '3');
-                break;
-
-                case 'N':
-                message_body = `List update for ${invItem} cancelled.`
-                send_message(channelID, message_body);
-                tempvar = false;
-                console.log(tempvar + '3');
-                break;
-                    }
-                 }
-            });
-            */
-            //tempvar = false;
-            //console.log(tempvar + '3');
         }
     });
 }
@@ -591,7 +448,6 @@ var list_write_update = function (qty, invItem, currency, price, channelID, conn
     console.log(`New ${invItem}:${currency} after sale: ${newQtyList}`);
     var write = `UPDATE inventory SET quantity = '${newQtyList}' WHERE name = '${invItem}' AND currency = '${currency}'`;
     connection.query(write, function (err, result) {
-        //console.log(result.affectedRows + " record(s) updated");
         console.log(`Record update complete!`);
         connection.release();
         message_body = `Item updated: ${newQtyList} ${invItem}(s), now in stock.`
@@ -608,7 +464,6 @@ var list_open_conn = function (qty, invItem, currency, price, channelID) {
 
 var list_validate_names = function (qty, invItem, currency, price, channelID, connection) {
     item_arr = new Array();
-    //new_arr = new Array(item_arr);
     var sql = `SELECT DISTINCT LOWER(name) AS name, currency FROM inventory WHERE name = '${invItem}' AND currency = '${currency}'`;
     console.log(`Current unique item/currency combo in inventory:`);
     console.log();
