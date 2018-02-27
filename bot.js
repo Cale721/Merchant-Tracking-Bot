@@ -7,9 +7,6 @@ var rightAlign = require('right-align');
 var center = require('center-align');
 
 
-
-
-
 var pool = mysql.createPool({
     connectionLimit: 20,
     host: (process.env.Database_host),
@@ -42,6 +39,7 @@ bot.on('ready', function (evt) {
 });
 
 let tempvar = false;
+let tempvar2 = false;
 bot.on('message', function (user, userID, channelID, message, evt) {
 
     // Our bot needs to know if it will execute a command
@@ -59,20 +57,20 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 sell_argcheck(args, channelID);
                 break;
 
-            case 'wonderful':
-                wunderbar(channelID);
-                break;
-
             case 'inv':
                 inv_check(channelID);
                 break;
 
-            case 'multi':
-                sell_multi_orders();
-                break;
+            //case 'multi':
+                //sell_multi_orders();
+               // break;
 
             case 'list':
               list_argcheck(args, channelID);
+              break;
+
+             case 'remove':
+              remove_argcheck(args, channelID);
               break;
 
             case 'help':
@@ -95,6 +93,10 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 makinplays(channelID);
                 break;
 
+            case 'wonderful':
+                wunderbar(channelID);
+                break;
+
             case 'kill':
                 kill_argcheck(args, channelID, user);
                 break;
@@ -107,12 +109,28 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 hiddengems(channelID);
                 break;
 
-            case 'text':
-            	text(channelID);
-            	break;
+            //case 'text':
+            	//text(channelID);
+            	//break;
             }
         }
-            else{
+        	if (tempvar2 == true){
+        			switch (cmd){
+            		case 'Y':
+            		pool.getConnection(function (err, connection) {
+            		remove_write_update(qty, invItem, currency, channelID, connection, currQty);
+            		});
+            		tempvar2 = false;
+            		break;
+
+            		case 'N':
+            		message_body = `Remove for ${invItem} cancelled.`
+                	send_message(channelID, message_body);
+            		tempvar2 = false;
+            		break;
+            	}
+        	}
+            if (tempvar == true){
             	switch (cmd){
             		case 'Y':
             		pool.getConnection(function (err, connection) {
@@ -134,7 +152,12 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 
 
 var help = function (channelID) {
-   str1 = "The following commands are available: \n!sold <quantity> <name> <currency> ---Track item sales \n!list <quantity> <name> <currency> <price> ---List new items to inventory \n!inv ---Check current inventory";
+   str1 = "The following commands are available: \n";
+   str1 += "!sold <quantity> <name> <currency> --- Track item sales \n";
+   str1 += "!list <quantity> <name> <currency> <price> --- List new items to inventory \n";
+   str1 += "!inv --- Check current inventory\n";
+   str1 += "!remove <quantity> <name> <currency> --- Remove items from inventory\n"
+
    message_body = `\`\`\`${str1}\`\`\``;
    send_message(channelID, message_body);
 };
@@ -153,14 +176,14 @@ var ping = function (channelID) {
     console.log('pong');
 };
 
-
+/*
 var text = function (channelID) {
 	str1 = `"text"`;
     message_body = str1;
     console.log(message_body);
     send_message(channelID, message_body);
 };
-
+*/
 
 //Dumb stuff Commands
 var wunderbar = function (channelID) {
@@ -268,6 +291,7 @@ var sell_read = function (qty, invItem, currency, channelID, connection) {
                 sell_write(qty, invItem, currency, channelID, connection, currQty);
             }
         }
+
         else {
             console.log(`No ${invItem}s are currently being sold in return for ${currency}. Killing sale.`);
             message_body = `No ${invItem}s are currently being sold in return for ${currency}. Killing sale.`;
@@ -328,6 +352,7 @@ var sell_open_conn = function (qty, invItem, currency, channelID) {
     });
 }
 
+/*
 var sell_multi_orders = function () {
     var invItem = "revolver";
     var currency = "scrap";
@@ -381,7 +406,7 @@ var sell_multi_orders = function () {
     });
 }
 //End !sell
-
+*/
 
 
 //Start !list
@@ -478,6 +503,104 @@ var list_validate_names = function (qty, invItem, currency, price, channelID, co
     });
 }
 //End !list
+
+//Start !remove
+var remove_argcheck = function (args, channelID) {
+    if (args.length < 4) {
+        message_body = "Format for this command is: !remove <quantity> <name> <currency>.";
+        send_message(channelID, message_body);
+    }
+    if (isNaN(args[1])) {
+        message_body = "Format for this command is: !remove <quantity> <name> <currency>.  Your input must be a number for <quantity>.";
+        send_message(channelID, message_body);
+    }
+    else {
+        qty = Number(args[1]);
+        invItem = args[2];
+        currency = args[3];
+        console.log(`Received request to remove ${qty} ${invItem}(s) for ${currency}`);
+        console.log(`Attempting to retrieve a connection from the pool`);
+        remove_open_conn(qty, invItem, currency, channelID);
+    }
+}
+
+var remove_open_conn = function (qty, invItem, currency, channelID) {
+    pool.getConnection(function (err, connection) {
+        console.log(`Conection opened. Checking to see if ${invItem} exists in inventory.`);
+        remove_validate_names(qty, invItem, currency, channelID, connection);
+    });
+}
+
+var remove_validate_names = function (qty, invItem, currency, channelID, connection) {
+    item_arr = new Array();
+    var sql = `SELECT DISTINCT LOWER(name) AS name, currency FROM inventory WHERE name = '${invItem}' AND currency = '${currency}'`;
+    console.log(`Current unique item/currency combo in inventory:`);
+    console.log();
+    connection.query(sql, function (err, result) {
+  
+        if (result.length >= 1) {
+            console.log(`${invItem} found in inventory. Proceed to update confirmation.`);
+            remove_read(qty, invItem, currency, channelID, connection);
+        }
+        else {
+            message_body = `Item not found in inventory. Nothing to remove.`;
+            send_message (channelID, message_body);
+
+        }
+        ;
+    });
+}
+
+var remove_read = function (qty, invItem, currency, channelID, connection) {
+
+	var read = `SELECT idInventory,quantity, sold FROM inventory WHERE name = '${invItem}' AND currency = '${currency}'`;
+    connection.query(read, function (err, read_result) {
+        if (read_result.length > 0) {
+            currQty = read_result[0].quantity;
+            console.log(`Currently ${currQty} available for sale; ${qty} requested`);
+            if (currQty <= 0) {
+                console.log(`Zero ${invItem}:${currency} available, killing sale.`);
+                message_body = `0 ${invItem}s currently being sold for ${currency}, cannot decrement further.`;
+                send_message(channelID, message_body);
+            }
+            else if (qty > currQty) {
+                //console.log(`Requested amount (${qty}) exceeds inventory (${currQty}), killing remove.`);
+                message_body = `Fewer than ${qty} ${invItem}s selling for ${currency} remaining; invalid removal.`;
+                send_message(channelID, message_body);
+            }
+            else {
+    console.log(`Checking to see how many ${invItem}:${currency} are available`);
+    var read = `SELECT idInventory, quantity FROM inventory WHERE name = '${invItem}' AND currency = '${currency}'`;
+    connection.query(read, function (err, read_result) {
+        if (read_result.length >= 0) {
+            currQty = read_result[0].quantity;
+            tempvar2 = true;
+            //console.log(tempvar + ' list read check');
+
+            message_body = `Item row exists. Currently ${currQty} available for sale. Do you want to remove from ${qty} inventory?  !Y / !N.`
+            send_message(channelID, message_body);
+        }
+    });
+    }
+    }
+
+});
+}
+
+
+var remove_write_update = function (qty, invItem, currency, channelID, connection, currQty) {
+    var newQtyList = currQty - qty;
+    //console.log(`New ${invItem}:${currency} after sale: ${newQtyList}`);
+
+    var write = `UPDATE inventory SET quantity = '${newQtyList}' WHERE name = '${invItem}' AND currency = '${currency}'`;
+    connection.query(write, function (err, result) {
+        console.log(`Record update complete!`);
+        connection.release();
+        message_body = `Item(s) removed: ${newQtyList} ${invItem}(s), now in stock.`
+        send_message(channelID, message_body);
+    });
+};
+//end !remove
 
 
 //Start !kill
