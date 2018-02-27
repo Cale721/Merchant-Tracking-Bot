@@ -197,16 +197,12 @@ var inv_check = function (channelID) {
         connection.query(sql, function (err, result) {
             if (err) throw err;
             connection.release();
-            //console.log(result.length);
-			//function centerAlign(len, longest, line, lines) {
- 			//return Math.floor((longest - len) / 2);
-			//}
 
-            var str1 = 'Quantity  Item Name      Currency   Price   Sold\n';
+            var str1 = 'Quantity  Item Name      Currency    Price   Sold\n';
             for (var index in result) {
                 str1 += pad(`   ${result[index].Quantity}`, 9, ' ');
                 str1 += pad(` ${result[index].Name}`, 16, ' ');
-                str1 += pad(` ${result[index].Currency}`, 12, ' ');
+                str1 += pad(` ${result[index].Currency}`, 13, ' ');
                 str1 += pad(` ${result[index].Price} `, 8, ' ');
                 str1 += pad(` ${result[index].Sold}`, 2, ' ');
                 str1 += `\n`;
