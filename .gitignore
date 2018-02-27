@@ -61,3 +61,6 @@ typings/
 
 # npm modules
 npm_modules/
+
+#node modules
+node_modules/
