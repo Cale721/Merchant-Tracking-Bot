@@ -113,9 +113,9 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 waynebrady(channelID);
                 break;
 
-            //case 'text':
-            	//text(channelID);
-            	//break;
+            case 'clearinv':
+                clearinv(channelID);
+                break;
             }
         }
         	if (tempvar2 == true){
@@ -161,13 +161,14 @@ var help = function (channelID) {
    str1 += "!list <quantity> <name> <currency> <price> --- List new items to inventory \n";
    str1 += "!sold <quantity> <name> <currency> --- Track item sales \n";
    str1 += "!remove <quantity> <name> <currency> --- Remove items from inventory\n"
+   str1 += "!clearinv --- Clears all current inventory\n";
 
    message_body = `\`\`\`${str1}\`\`\``;
    send_message(channelID, message_body);
 };
 
 var hiddengems = function (channelID) {
-   str1 = "Dumb Stuff: \n !dump \n !poop \n !fart \n !makinplays \n !wonderful \n !kill (in-dev) \n !killstats (in-dev) \n !ping";
+   str1 = "Dumb Stuff: \n !dump \n !poop \n !fart \n !makinplays \n !wonderful \n !kill (in-dev) \n !killstats (in-dev) \n !waynebrady\n !ping";
    message_body = `\`\`\`${str1}\`\`\``;
    send_message(channelID, message_body);
 };
@@ -180,22 +181,6 @@ var ping = function (channelID) {
     console.log('pong');
 };
 
-var waynebrady = function (channelID) {
-    bot.sendMessage({
-        to: channelID,
-        message: 'Is Wayne Brady going to have to choke a bitch!?!'
-    });
-    //console.log('pong');
-};
-
-/*
-var text = function (channelID) {
-	str1 = `"text"`;
-    message_body = str1;
-    console.log(message_body);
-    send_message(channelID, message_body);
-};
-*/
 
 //Dumb stuff Commands
 var wunderbar = function (channelID) {
@@ -224,6 +209,13 @@ var makinplays = function (channelID) {
    send_message(channelID, message_body);
 };
 
+var waynebrady = function (channelID) {
+    bot.sendMessage({
+        to: channelID,
+        message: 'Is Wayne Brady gonna have to choke a bitch!?!'
+    });
+};
+
 
 //Inventory Check
 var inv_check = function (channelID) {
@@ -247,6 +239,29 @@ var inv_check = function (channelID) {
             send_message(channelID, message_body);
         });
     });
+}
+
+
+//Clear inventory
+var clearinv = function (channelID) {
+
+
+
+    var sql = "DELETE from inventory WHERE name <> ' ';"
+    pool.getConnection(function (err, connection) {
+        connection.query(sql, function (err, result) {
+            if (err) throw err;
+            connection.release();
+
+            console.log(result.affectedRows);
+            message_body = 'All rows have been deleted.';
+            send_message(channelID, message_body);
+        });
+    });
+
+
+
+
 }
 
 
