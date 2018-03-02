@@ -116,6 +116,10 @@ bot.on('message', function (user, userID, channelID, message, evt) {
             case 'clearinv':
                 clearinv(channelID);
                 break;
+
+            case 'removerow':
+                removerow(args, channelID);
+                break;
             }
         }
         	if (tempvar2 == true){
@@ -242,6 +246,49 @@ var inv_check = function (channelID) {
         });
     });
 }
+
+//Remove Row
+var removerow = function (args, channelID) {
+	if (args.length < 3) {
+        message_body = "Format for this command is: !removerow <name> <currency>.";
+        send_message(channelID, message_body);
+    }
+    else{
+        invItem = args[1];
+        currency = args[2];
+    
+    //var sql = `select * from inventory WHERE name = '${invItem}'`;// AND currency = '${currency}'`;
+
+    var sql = `DELETE from inventory WHERE name = '${invItem}' AND currency = '${currency}'`;
+
+    pool.getConnection(function (err, connection) {
+        connection.query(sql, function (err, result) {
+            if (err) throw err;
+            connection.release();
+                console.log("Number of records deleted: " + result.affectedRows);
+
+            message_body = 'Row removed.'
+/*
+            var str1 = 'Quantity  Item Name      Currency    Price   Sold  \n';
+            for (var index in result) {
+                str1 += pad(`   ${result[index].Quantity}`, 9, ' ');
+                str1 += pad(` ${result[index].Name}`, 16, ' ');
+                str1 += pad(` ${result[index].Currency}`, 13, ' ');
+                str1 += pad(` ${result[index].Price} `, 8, ' ');
+                str1 += pad(` ${result[index].Sold}`, 2, ' ');
+                str1 += `\n`;
+            }
+                //str1 += `Total`;
+
+            message_body = `\`\`\`${str1}\`\`\``;
+            */
+            //console.log(message_body);
+            send_message(channelID, message_body);
+        });
+    });
+}
+}
+
 
 
 //Clear inventory
@@ -473,7 +520,8 @@ var list_read = function (qty, invItem, currency, price, channelID, connection) 
             currQty = read_result[0].quantity;
             //tempvar = true;
             //console.log(tempvar + ' list read check');
-                        var newQtyList = currQty + qty;
+            
+            //var newQtyList = currQty + qty;
 
             list_write_update(qty, invItem, currency, price, channelID, connection, currQty);
             //message_body = `Item row exists. Item updated: ${newQtyList} ${invItem}(s), now in stock.`
@@ -611,12 +659,19 @@ var remove_read = function (qty, invItem, currency, channelID, connection) {
     connection.query(read, function (err, read_result) {
         if (read_result.length >= 0) {
             currQty = read_result[0].quantity;
-            tempvar2 = true;
+            //tempvar2 = true;
             //console.log(tempvar + ' list read check');
 
-            message_body = `Item row exists. Currently ${currQty} available for sale. Do you want to remove from ${qty} inventory?  !Y / !N.`
-            send_message(channelID, message_body);
+            //message_body = `Item row exists. Currently ${currQty} available for sale. Do you want to remove from ${qty} inventory?  !Y / !N.`
+            //send_message(channelID, message_body);
+			pool.getConnection(function (err, connection) {
+            remove_write_update(qty, invItem, currency, channelID, connection, currQty);
+            });
+
         }
+        else{
+            	message_body = `No row found to remove.`;
+            }
     });
     }
     }
