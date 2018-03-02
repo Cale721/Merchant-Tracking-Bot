@@ -477,7 +477,7 @@ var list_read = function (qty, invItem, currency, price, channelID, connection) 
 
             list_write_update(qty, invItem, currency, price, channelID, connection, currQty);
             //message_body = `Item row exists. Item updated: ${newQtyList} ${invItem}(s), now in stock.`
-            send_message(channelID, message_body);
+            //send_message(channelID, message_body);
         }
         else{
             pool.getConnection(function (err, connection) {
