@@ -225,7 +225,7 @@ var inv_check = function (channelID) {
             if (err) throw err;
             connection.release();
 
-            var str1 = 'Quantity  Item Name      Currency    Price   Sold\n';
+            var str1 = 'Quantity  Item Name      Currency    Price   Sold  \n';
             for (var index in result) {
                 str1 += pad(`   ${result[index].Quantity}`, 9, ' ');
                 str1 += pad(` ${result[index].Name}`, 16, ' ');
@@ -234,6 +234,8 @@ var inv_check = function (channelID) {
                 str1 += pad(` ${result[index].Sold}`, 2, ' ');
                 str1 += `\n`;
             }
+                //str1 += `Total`;
+
             message_body = `\`\`\`${str1}\`\`\``;
             //console.log(message_body);
             send_message(channelID, message_body);
@@ -469,11 +471,19 @@ var list_read = function (qty, invItem, currency, price, channelID, connection) 
     connection.query(read, function (err, read_result) {
         if (read_result.length >= 0) {
             currQty = read_result[0].quantity;
-            tempvar = true;
+            //tempvar = true;
             //console.log(tempvar + ' list read check');
+                        var newQtyList = currQty + qty;
 
-            message_body = `Item row exists. Currently ${currQty} available for sale. Do you want to update inventory?  !Y / !N.`
+            list_write_update(qty, invItem, currency, price, channelID, connection, currQty);
+            //message_body = `Item row exists. Item updated: ${newQtyList} ${invItem}(s), now in stock.`
             send_message(channelID, message_body);
+        }
+        else{
+            pool.getConnection(function (err, connection) {
+            list_write_update(qty, invItem, currency, price, channelID, connection, currQty);
+        });
+
         }
     });
 }
@@ -498,7 +508,7 @@ var list_write_update = function (qty, invItem, currency, price, channelID, conn
     connection.query(write, function (err, result) {
         console.log(`Record update complete!`);
         connection.release();
-        message_body = `Item updated: ${newQtyList} ${invItem}(s), now in stock.`
+        message_body = `Listing already exists. Row updated: ${newQtyList} ${invItem}(s), now in stock.`
         send_message(channelID, message_body);
     });
 };
