@@ -47,7 +47,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
     if (message.substring(0, 1) == '!') {
         var args = message.substring(1).split(' ');
         var cmd = args[0];
-        if(tempvar == false){
+        //if(tempvar == false){
         switch (cmd) {
             case 'ping':
                 ping(channelID);
@@ -76,10 +76,6 @@ bot.on('message', function (user, userID, channelID, message, evt) {
             case 'help':
             	help(channelID);
             	break;
-
-            case 'dump':
-                dump(channelID);
-                break;
 
             case 'fart':
                 fart(channelID);
@@ -121,11 +117,17 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 removerow(args, channelID);
                 break;
 
-            case 'updaterow':
-                updaterow(args, channelID);
-                break;    
+            case 'updateprice':
+                updateprice(args, channelID);
+                break;   
+
+            case 'total':
+                getTotal(args, channelID);
+                break;  
             }
-        }
+        //}
+
+        /*
         	if (tempvar2 == true){
         			switch (cmd){
             		case 'Y':
@@ -159,6 +161,8 @@ bot.on('message', function (user, userID, channelID, message, evt) {
             	}
             }
 
+            */
+
         }
 });
 
@@ -169,7 +173,7 @@ var help = function (channelID) {
    str1 += "!list <quantity> <name> <currency> <price> --- List new items to inventory \n";
    str1 += "!sold <quantity> <name> <currency> --- Track item sales \n";
    str1 += "!remove <quantity> <name> <currency> --- Remove items from inventory\n";
-   str1 += "!updaterow <name> <currency> <price> --- Update price for existing row\n";
+   str1 += "!updateprice <name> <currency> <price> --- Update price for existing row\n";
    str1 += "!clearinv --- Clears all current inventory\n";
 
    message_body = `\`\`\`${str1}\`\`\``;
@@ -177,7 +181,7 @@ var help = function (channelID) {
 };
 
 var hiddengems = function (channelID) {
-   str1 = "Dumb Stuff: \n !dump \n !poop \n !fart \n !makinplays \n !wonderful \n !kill (in-dev) \n !killstats (in-dev) \n !waynebrady\n !ping";
+   str1 = "Dumb Stuff: \n !poop \n !fart \n !makinplays \n !wonderful \n !kill (in-dev) \n !killstats (in-dev) \n !waynebrady\n !ping";
    message_body = `\`\`\`${str1}\`\`\``;
    send_message(channelID, message_body);
 };
@@ -198,13 +202,8 @@ var wunderbar = function (channelID) {
 };
 
 
-var dump = function (channelID) {
-   message_body = "Uhhh ohhhh... I just shit my pants.";  
-   send_message(channelID, message_body);
-};
-
 var fart = function (channelID) {
-   message_body = "Whoa.  That one was smelly.  And wet...";  
+   message_body = "Uhhh ohhhh... I just shit my pants.";  
    send_message(channelID, message_body);
 };
 
@@ -297,9 +296,9 @@ var removerow = function (args, channelID) {
 
 
 //Update Row
-var updaterow = function (args, channelID) {
+var updateprice = function (args, channelID) {
     if (args.length < 4) {
-        message_body = "Format for this command is: !updaterow <name> <currency> <price>.";
+        message_body = "Format for this command is: !updateprice <name> <currency> <price>.";
         send_message(channelID, message_body);
     }
     else{
@@ -307,7 +306,7 @@ var updaterow = function (args, channelID) {
         currency = args[2];
         price = args[3];
     if (isNaN(args[3])) {
-        message_body = "Format for this command is: !updaterow <name> <currency> <price>.  You must input a number for <price>.";
+        message_body = "Format for this command is: !updateprice <name> <currency> <price>.  You must input a number for <price>.";
         send_message(channelID, message_body);
     }
 
@@ -332,8 +331,6 @@ var updaterow = function (args, channelID) {
 //Clear inventory
 var clearinv = function (channelID) {
 
-
-
     var sql = "DELETE from inventory WHERE name <> ' ';"
     pool.getConnection(function (err, connection) {
         connection.query(sql, function (err, result) {
@@ -345,12 +342,38 @@ var clearinv = function (channelID) {
             send_message(channelID, message_body);
         });
     });
-
-
-
-
 }
 
+
+//Total
+var getTotal = function (args, channelID) {
+
+    if (args.length < 2) {
+        message_body = "Format for this command is: !total <currency>.";
+        send_message(channelID, message_body);
+    }
+    else{
+        currency = args[1];
+
+    var sql = `Select total from inventory WHERE currency = '${currency}'`;
+    pool.getConnection(function (err, connection) {
+        connection.query(sql, function (err, result) {
+            total = 0;
+            for (var index in result) {
+                total = (total + result[index].total);
+            }
+            //total = JSON.stringify(result[0]);
+            console.log(total);
+            if (err) throw err;
+            connection.release();
+
+            //console.log(result.affectedRows);
+            message_body = `Total ${currency} sold = ${total} `;
+            send_message(channelID, message_body);
+        });
+    });
+}
+}
 
 //Send Message Function
 var send_message = function (channelID, message_body) {
@@ -415,7 +438,7 @@ var sell_read = function (qty, invItem, currency, channelID, connection) {
 }
 
 var sell_write = function (qty, invItem, currency, channelID, connection, currQty) {
-	var read = `SELECT idInventory,quantity, sold, total, price FROM inventory WHERE name = '${invItem}' AND currency = '${currency}'`;
+	var read = `SELECT idInventory, quantity, sold, total, price FROM inventory WHERE name = '${invItem}' AND currency = '${currency}'`;
     connection.query(read, function (err, read_result) {
     //console.log(read_result);
     newQty = currQty - qty;
