@@ -120,6 +120,10 @@ bot.on('message', function (user, userID, channelID, message, evt) {
             case 'removerow':
                 removerow(args, channelID);
                 break;
+
+            case 'updaterow':
+                updaterow(args, channelID);
+                break;    
             }
         }
         	if (tempvar2 == true){
@@ -164,7 +168,8 @@ var help = function (channelID) {
    str1 += "!inv --- Check current inventory\n";
    str1 += "!list <quantity> <name> <currency> <price> --- List new items to inventory \n";
    str1 += "!sold <quantity> <name> <currency> --- Track item sales \n";
-   str1 += "!remove <quantity> <name> <currency> --- Remove items from inventory\n"
+   str1 += "!remove <quantity> <name> <currency> --- Remove items from inventory\n";
+   str1 += "!updaterow <name> <currency> <price> --- Update price for existing row\n";
    str1 += "!clearinv --- Clears all current inventory\n";
 
    message_body = `\`\`\`${str1}\`\`\``;
@@ -223,19 +228,20 @@ var waynebrady = function (channelID) {
 
 //Inventory Check
 var inv_check = function (channelID) {
-    var sql = "select * from inventory;"
+    var sql = "select * from inventory ORDER BY price;"
     pool.getConnection(function (err, connection) {
         connection.query(sql, function (err, result) {
             if (err) throw err;
             connection.release();
 
-            var str1 = 'Quantity  Item Name      Currency    Price   Sold  \n';
+            var str1 = 'Quantity  Item Name      Currency    Price    Sold   Total  \n';
             for (var index in result) {
                 str1 += pad(`   ${result[index].Quantity}`, 9, ' ');
                 str1 += pad(` ${result[index].Name}`, 16, ' ');
                 str1 += pad(` ${result[index].Currency}`, 13, ' ');
                 str1 += pad(` ${result[index].Price} `, 8, ' ');
-                str1 += pad(` ${result[index].Sold}`, 2, ' ');
+                str1 += pad(` ${result[index].Sold}`, 8, ' ');
+                str1 += pad(` ${result[index].Total}`, 2, ' ');
                 str1 += `\n`;
             }
                 //str1 += `Total`;
@@ -289,6 +295,38 @@ var removerow = function (args, channelID) {
 }
 }
 
+
+//Update Row
+var updaterow = function (args, channelID) {
+    if (args.length < 4) {
+        message_body = "Format for this command is: !updaterow <name> <currency> <price>.";
+        send_message(channelID, message_body);
+    }
+    else{
+        invItem = args[1];
+        currency = args[2];
+        price = args[3];
+    if (isNaN(args[3])) {
+        message_body = "Format for this command is: !updaterow <name> <currency> <price>.  You must input a number for <price>.";
+        send_message(channelID, message_body);
+    }
+
+
+    var sql = `UPDATE inventory SET price = '${price}' WHERE name = '${invItem}' AND currency = '${currency}'`;
+
+
+    pool.getConnection(function (err, connection) {
+        connection.query(sql, function (err, result) {
+            if (err) throw err;
+            connection.release();
+               // console.log("Number of records deleted: " + result.affectedRows);
+
+            message_body = 'Price updated.'
+            send_message(channelID, message_body);
+        });
+    });
+}
+}
 
 
 //Clear inventory
@@ -377,13 +415,23 @@ var sell_read = function (qty, invItem, currency, channelID, connection) {
 }
 
 var sell_write = function (qty, invItem, currency, channelID, connection, currQty) {
-	var read = `SELECT idInventory,quantity, sold FROM inventory WHERE name = '${invItem}' AND currency = '${currency}'`;
+	var read = `SELECT idInventory,quantity, sold, total, price FROM inventory WHERE name = '${invItem}' AND currency = '${currency}'`;
     connection.query(read, function (err, read_result) {
+    //console.log(read_result);
     newQty = currQty - qty;
+    
     soldQty = read_result[0].sold;
     newSoldQty = soldQty + qty;
+
+    totalQty = read_result[0].total;
+    console.log("total qty = " + totalQty);
+
+    price = read_result[0].price;
+
+    newTotalQty = (totalQty + (price * qty));
+
     console.log(`New ${invItem}:${currency} after sale: ${newQty}`);
-    var write = `UPDATE inventory SET quantity = '${newQty}', sold = '${newSoldQty}' WHERE name = '${invItem}' AND currency = '${currency}'`;
+    var write = `UPDATE inventory SET quantity = '${newQty}', sold = '${newSoldQty}', total = '${newTotalQty}' WHERE name = '${invItem}' AND currency = '${currency}'`;
     connection.query(write, function (err, write_result) {
         console.log(write_result.affectedRows + " record(s) updated");
         console.log(`Sale complete!`);
