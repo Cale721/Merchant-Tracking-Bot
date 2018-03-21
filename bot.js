@@ -583,7 +583,7 @@ var list_write_update = function (qty, invItem, currency, price, channelID, conn
     connection.query(write, function (err, result) {
         console.log(`Record update complete!`);
         connection.release();
-        message_body = `Listing already exists. Row updated: ${newQtyList} ${invItem}(s), now in stock.`
+        message_body = `Row updated: ${newQtyList} ${invItem}(s), now in stock.`
         send_message(channelID, message_body);
     });
 };
