@@ -77,20 +77,9 @@ bot.on('message', function (user, userID, channelID, message, evt) {
             	help(channelID);
             	break;
 
-            case 'fart':
-                fart(channelID);
-                break;
-
-            case 'poop':
-                poop(channelID);
-                break;
-
+          
             case 'makinplays':
                 makinplays(channelID);
-                break;
-
-            case 'wonderful':
-                wunderbar(channelID);
                 break;
 
             case 'kill':
@@ -99,14 +88,6 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 
             case 'killstats':
                 kill_stats(channelID, user);
-                break;
-
-            case 'hiddengems':
-                hiddengems(channelID);
-                break;
-
-            case 'waynebrady':
-                waynebrady(channelID);
                 break;
 
             case 'clearinv':
@@ -181,11 +162,6 @@ var help = function (channelID) {
    send_message(channelID, message_body);
 };
 
-var hiddengems = function (channelID) {
-   str1 = "Dumb Stuff: \n !poop \n !fart \n !makinplays \n !wonderful \n !kill (in-dev) \n !killstats (in-dev) \n !waynebrady\n !ping";
-   message_body = `\`\`\`${str1}\`\`\``;
-   send_message(channelID, message_body);
-};
 
 var ping = function (channelID) {
     bot.sendMessage({
@@ -197,32 +173,10 @@ var ping = function (channelID) {
 
 
 //Dumb stuff Commands
-var wunderbar = function (channelID) {
-    message_body = "Wunderbar!";
-    send_message(channelID, message_body);
-};
-
-
-var fart = function (channelID) {
-   message_body = "Uhhh ohhhh... I just shit my pants.";  
-   send_message(channelID, message_body);
-};
-
-var poop = function (channelID) {
-   message_body = "What the hell!  No toilet paper! FML";  
-   send_message(channelID, message_body);
-};
 
 var makinplays = function (channelID) {
    message_body = "MAKIN PLAYS!!!";  
    send_message(channelID, message_body);
-};
-
-var waynebrady = function (channelID) {
-    bot.sendMessage({
-        to: channelID,
-        message: 'Is Wayne Brady gonna have to choke a bitch!?!'
-    });
 };
 
 
