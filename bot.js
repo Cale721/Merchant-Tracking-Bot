@@ -155,7 +155,7 @@ var help = function (channelID) {
    str1 += "!sold <quantity> <name> <currency> --- Track item sales \n";
    str1 += "!remove <quantity> <name> <currency> --- Remove items from inventory \n";
    str1 += "!updateprice <name> <currency> <price> --- Update price for existing row \n";
-   str1 += "!total <currency> --- Sum total sold by currency "
+   str1 += "!total <currency> --- Sum total sold by currency \n"
    str1 += "!clearinv --- Clears all current inventory \n";
 
    message_body = `\`\`\`${str1}\`\`\``;
