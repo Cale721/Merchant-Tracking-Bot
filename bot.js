@@ -105,6 +105,14 @@ bot.on('message', function (user, userID, channelID, message, evt) {
             case 'total':
                 getTotal(args, channelID);
                 break;  
+
+            case 'misc':
+                misc(args, channelID);
+                break;
+
+            case 'bp':
+                bp(args, channelID, user);
+                break;  
             }
         //}
 
@@ -154,10 +162,12 @@ var help = function (channelID) {
    str1 += "!list <quantity> <name> <currency> <price> --- List new items to inventory \n";
    str1 += "!sold <quantity> <name> <currency> --- Track item sales \n";
    str1 += "!remove <quantity> <name> <currency> --- Remove items from inventory \n";
-   str1 += "!removerow <name> <currency> <price> --- Delete row from table. \n"
+   str1 += "!removerow <name> <currency> <price> --- Delete row from table. \n";
    str1 += "!updateprice <name> <currency> <price> --- Update price for existing row \n";
-   str1 += "!total <currency> --- Sum total sold by currency \n"
+   str1 += "!total <currency> --- Sum total sold by currency \n";
    str1 += "!clearinv --- Clears all current inventory \n";
+   str1 += "!misc <item> <currency> <amount> --- Track misc items gained \n";
+   str1 += "!bp <itemname> --- Add bps learned \n";
 
    message_body = `\`\`\`${str1}\`\`\``;
    send_message(channelID, message_body);
@@ -330,6 +340,78 @@ var getTotal = function (args, channelID) {
     });
 }
 }
+
+//Misc
+var misc = function (args, channelID) {
+
+    if (args.length < 4) {
+        message_body = "Format for this command is: !misc <item> <currency> <amount>.";
+        send_message(channelID, message_body);
+    }
+    else{
+        item = args[1];
+        currency = args[2];
+        amount = Number(args[3]);
+
+    var sql = `Select item, currency, amount from misc WHERE item = '${item}'`;
+    pool.getConnection(function (err, connection) {
+        connection.query(sql, function (err, result) {
+        if (result.length > 0){
+	currQty = result[0].amount;
+    newQty = currQty + amount;
+
+    var write = `UPDATE misc SET amount = '${newQty}' WHERE item = '${item}'`;
+    connection.query(write, function(err, write_result){
+        //console.log(write_result.affectedRows + " record(s) updated");
+        connection.release();
+    	message_body = `Total ${currency} from ${item} = ${newQty} `;
+    	send_message(channelID, message_body);
+    	    });
+			}
+			else{
+				message_body = `No row found`;
+                send_message(channelID, message_body);
+                connection.release();
+			}
+		});
+    });
+  }
+}
+
+//BP
+var bp = function (args, channelID, user) {
+	if (args.length < 2) {
+        message_body = "Format for this command is: !bp <itemname>.";
+        send_message(channelID, message_body);
+    }
+    else {
+    	blueprint = args[1];
+
+    var sql = `Select name, blueprint from blueprints where name = '${user}'`;
+    //console.log({$user});
+     pool.getConnection(function (err, connection) {
+        connection.query(sql, function (err, result) {
+        if (result.length > 0){
+        	currBlueprints = result[0].blueprint;
+        	newBlueprints = currBlueprints + '~' + blueprint;
+
+    var write = `UPDATE blueprints SET blueprint = '${newBlueprints}' WHERE name = '${user}'`;
+    connection.query(write, function(err, write_result){
+    	connection.release();
+    	message_body = `Blueprints learned for ${user} = ${newBlueprints} `;
+    	send_message(channelID, message_body);
+    	});
+        }
+        else{
+        message_body = `No user found`;
+                send_message(channelID, message_body);
+                connection.release();
+			}
+    });
+});
+}
+}
+
 
 //Send Message Function
 var send_message = function (channelID, message_body) {
