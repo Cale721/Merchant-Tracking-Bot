@@ -402,7 +402,7 @@ var bp = function (args, channelID, user) {
     var write = `UPDATE blueprints SET blueprint = '${newBlueprints}' WHERE name = '${user}'`;
     connection.query(write, function(err, write_result){
     	connection.release();
-    	message_body = `Blueprints learned for ${user} = ${newBlueprints} `;
+    	message_body = `Blueprints learned for ${user} ${newBlueprints} `;
     	send_message(channelID, message_body);
     	});
         }
@@ -430,7 +430,7 @@ var bpslearned =function(args, channelID){
         connection.query(sql, function (err, result) {
         	if (result.length > 0){
         		blueprint = result[0].blueprint;
-        		message_body = `Blueprints learned for ${playername} = ${blueprint}`;
+        		message_body = `Blueprints learned for ${playername} ${blueprint}`;
         		send_message(channelID, message_body);
         		connection.release();
         }
