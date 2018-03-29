@@ -112,6 +112,10 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 
             case 'bp':
                 bp(args, channelID, user);
+                break;
+
+            case 'bpslearned':
+                bpslearned(args, channelID);
                 break;  
             }
         //}
@@ -410,6 +414,37 @@ var bp = function (args, channelID, user) {
     });
 });
 }
+}
+
+//BPs Learned
+var bpslearned =function(args, channelID){
+	if (args.length < 2){
+		message_body = "Format for this command is: !bpslearned <playername>";
+		send_message(channelID, message_body);
+	}
+	else {
+		playername = args[1];
+
+		var sql = `SELECT blueprint from blueprints where name = '${playername}'`;
+		pool.getConnection(function (err, connection) {
+        connection.query(sql, function (err, result) {
+        	if (result.length > 0){
+        		blueprint = result[0].blueprint;
+        		message_body = `Blueprints learned for ${playername} = ${blueprint}`;
+        		send_message(channelID, message_body);
+        		connection.release();
+        }
+        	else{
+        		message_body = `No player found`;
+        		send_message(channelID, message_body);
+        		connection.release();
+        	}
+        	    });
+});
+
+	}
+
+
 }
 
 
