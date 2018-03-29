@@ -393,7 +393,7 @@ var bp = function (args, channelID, user) {
         connection.query(sql, function (err, result) {
         if (result.length > 0){
         	currBlueprints = result[0].blueprint;
-        	newBlueprints = currBlueprints + '~' + blueprint;
+        	newBlueprints = currBlueprints + ' | ' + blueprint;
 
     var write = `UPDATE blueprints SET blueprint = '${newBlueprints}' WHERE name = '${user}'`;
     connection.query(write, function(err, write_result){
