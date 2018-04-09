@@ -171,7 +171,9 @@ var help = function (channelID) {
    str1 += "!total <currency> --- Sum total sold by currency \n";
    str1 += "!clearinv --- Clears all current inventory \n";
    str1 += "!misc <item> <currency> <amount> --- Track misc items gained \n";
-   str1 += "!bp <itemname> --- Add bps learned \n";
+   str1 += "!bp <itemname> --- Add new bp\n";
+   str1 += "!bpslearned <playername> --- Check bps learned for player\n";
+
 
    message_body = `\`\`\`${str1}\`\`\``;
    send_message(channelID, message_body);
